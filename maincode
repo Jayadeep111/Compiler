@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int requires_semicolon(const char* line) {
+    const char *no_semicolon_keywords[] = {"if","#", "else", "while", "for", "int main", "void main", "{", "}", "return", "//"};
+    for (int i = 0; i < sizeof(no_semicolon_keywords) / sizeof(no_semicolon_keywords[0]); i++) {
+        if (strstr(line, no_semicolon_keywords[i]) != NULL) {
+            return 0; // No semicolon needed
+        }
+    }
+    return 1; // Semicolon needed
+}
+
+//check if a line ends with a semicolon
+int ends_with_semicolon(const char* line) {
+    int len = strlen(line);
+    if (len == 0 || line[len - 1] == '{' || line[len - 1] == '}') return 1;
+    return line[len - 1] == ';';
+}
+
+int main() {
+    FILE *file = fopen("file.c", "r");
+    if (file == NULL) {
+        printf("Error: Unable to open file.\n");
+        return 1;
+    }
+
+    char line[256];
+    int line_number = 0;
+    while (fgets(line, sizeof(line), file)) {
+        line_number++;
+
+        
+        line[strcspn(line, "\n")] = 0; // Removing newline character
+
+        if (requires_semicolon(line) && !ends_with_semicolon(line)) {
+            printf("Error: Missing ';' at line %d: %s\n", line_number, line);
+        }
+    }
+
+    fclose(file);
+    return 0;
+}
